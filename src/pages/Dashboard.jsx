@@ -58,26 +58,56 @@ export default function Dashboard() {
     // ─── Data Loading ────────────────────────────────────────────────────────────
 
     useEffect(() => {
+        if (!guestMode && !user) return;
+
         setLoading(true);
         if (guestMode) {
-            const gHabits = guestGetHabits();
-            const gData = guestGetMonthData(monthKey);
-            setHabits(gHabits);
-            setTrackingData(gData);
+            try {
+                const gHabits = guestGetHabits();
+                const gData = guestGetMonthData(monthKey);
+                setHabits(gHabits);
+                setTrackingData(gData);
+            } catch (err) {
+                console.error('Failed to load guest data:', err);
+            } finally {
+                setLoading(false);
+            }
+            return;
+        }
+
+        if (!user) {
             setLoading(false);
             return;
         }
-        if (!user) return;
+
+        // Use a counter or specific booleans to ensure both are loaded
+        let habitsLoaded = false;
+        let monthDataLoaded = false;
+
+        const checkLoaded = () => {
+            if (habitsLoaded && monthDataLoaded) {
+                setLoading(false);
+            }
+        };
 
         // Listen to habits
         const unsubHabits = listenToHabits(uid, (h) => {
             setHabits(h);
+            habitsLoaded = true;
+            checkLoaded();
+        }, (err) => {
+            console.error('Habits listener error:', err);
             setLoading(false);
         });
 
         // Listen to monthly data
         const unsubMonth = listenToMonthData(uid, monthKey, (data) => {
             setTrackingData(data);
+            monthDataLoaded = true;
+            checkLoaded();
+        }, (err) => {
+            console.error('Month data listener error:', err);
+            setLoading(false); // Set loading to false even on error
         });
 
         return () => {
@@ -469,3 +499,4 @@ function SkeletonGrid() {
         </div>
     );
 }
+

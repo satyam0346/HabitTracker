@@ -9,7 +9,7 @@ export default function AuthPage() {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [googleLoading, setGoogleLoading] = useState(false);
-    const { login, signup, loginWithGoogle } = useAuth();
+    const { login, signup, loginWithGoogle, enterGuestMode } = useAuth();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -186,6 +186,18 @@ export default function AuthPage() {
                         {mode === 'login' ? 'Sign Up' : 'Sign In'}
                     </button>
                 </p>
+
+                {/* Guest Mode */}
+                <div className="mt-8 pt-6 border-t border-khaki-100 text-center">
+                    <p className="text-xs text-khaki-500 mb-3 uppercase tracking-wider font-bold">New here? Try first!</p>
+                    <button
+                        onClick={enterGuestMode}
+                        className="text-sm font-semibold text-khaki-600 hover:text-khaki-800 transition-colors flex items-center justify-center gap-2 mx-auto"
+                    >
+                        <span>Continue as Guest</span>
+                        <span className="text-[10px] bg-khaki-100 px-1.5 py-0.5 rounded text-khaki-600">Offline Only</span>
+                    </button>
+                </div>
             </div>
         </div>
     );

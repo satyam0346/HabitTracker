@@ -26,6 +26,10 @@ export const AuthProvider = ({ children }) => {
     useEffect(() => {
         const unsub = onAuthStateChanged(auth, u => {
             setUser(u);
+            if (u) {
+                setGuestMode(false);
+                localStorage.removeItem('guestMode');
+            }
             setLoading(false);
         });
         return unsub;
