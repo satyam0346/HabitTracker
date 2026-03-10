@@ -119,28 +119,33 @@ export default function Dashboard() {
     // ─── Habit CRUD ──────────────────────────────────────────────────────────────
 
     const handleSaveHabit = async (formData) => {
-        if (editingHabit) {
-            if (guestMode) {
-                const updated = habits.map(h =>
-                    h.id === editingHabit.id ? { ...h, ...formData } : h
-                );
-                setHabits(updated);
-                guestSaveHabits(updated);
+        try {
+            if (editingHabit) {
+                if (guestMode) {
+                    const updated = habits.map(h =>
+                        h.id === editingHabit.id ? { ...h, ...formData } : h
+                    );
+                    setHabits(updated);
+                    guestSaveHabits(updated);
+                } else {
+                    await updateHabit(uid, editingHabit.id, formData);
+                }
             } else {
-                await updateHabit(uid, editingHabit.id, formData);
+                if (guestMode) {
+                    const newHabit = { id: Date.now().toString(), ...formData, order: habits.length };
+                    const updated = [...habits, newHabit];
+                    setHabits(updated);
+                    guestSaveHabits(updated);
+                } else {
+                    await addHabit(uid, formData);
+                }
             }
-        } else {
-            if (guestMode) {
-                const newHabit = { id: Date.now().toString(), ...formData, order: habits.length };
-                const updated = [...habits, newHabit];
-                setHabits(updated);
-                guestSaveHabits(updated);
-            } else {
-                await addHabit(uid, formData);
-            }
+            setShowModal(false);
+            setEditingHabit(null);
+        } catch (err) {
+            console.error('Save failed:', err);
+            alert('Database Error: Failed to save habit. Please check your Firestore rules or internet connection.');
         }
-        setShowModal(false);
-        setEditingHabit(null);
     };
 
     const handleDeleteHabit = async (habit) => {
@@ -190,10 +195,15 @@ export default function Dashboard() {
                 [dayStr]: { ...prev.mentalState?.[dayStr], [field]: value },
             },
         }));
-        if (guestMode) {
-            guestUpdateMentalState(monthKey, day, field, value);
-        } else {
-            await updateMentalState(uid, monthKey, day, field, value);
+        try {
+            if (guestMode) {
+                guestUpdateMentalState(monthKey, day, field, value);
+            } else {
+                await updateMentalState(uid, monthKey, day, field, value);
+            }
+        } catch (err) {
+            console.error('Mental state update failed:', err);
+            alert('Database Error: Failed to save mood/motivation.');
         }
     }, [uid, monthKey, guestMode]);
 
