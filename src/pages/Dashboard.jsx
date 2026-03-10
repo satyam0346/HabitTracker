@@ -144,7 +144,6 @@ export default function Dashboard() {
             setEditingHabit(null);
         } catch (err) {
             console.error('Save failed:', err);
-            alert('Database Error: Failed to save habit. Please check your Firestore rules or internet connection.');
         }
     };
 
@@ -203,7 +202,6 @@ export default function Dashboard() {
             }
         } catch (err) {
             console.error('Mental state update failed:', err);
-            alert('Database Error: Failed to save mood/motivation.');
         }
     }, [uid, monthKey, guestMode]);
 
